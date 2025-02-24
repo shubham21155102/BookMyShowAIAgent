@@ -3,6 +3,9 @@ python3 manage.py createsuperuser
 
 python manage.py startapp accounts
 
+python manage.py makemigrations
+
 python manage.py makemigrations accounts
 
 python manage.py migrate accounts
+

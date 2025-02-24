@@ -62,7 +62,6 @@ def register(request):
         # Basic validation
         if not username or not password:
             return JsonResponse({"status": "error", "message": "Username and password are required"}, status=400)
-       
         # Check if user already exists
         if CustomerTable.objects.filter(username=username).exists():
             return JsonResponse({"status": "error", "message": "User already exists"}, status=400)
@@ -82,3 +81,69 @@ def register(request):
     except Exception as e:
         print(f"Error: {e}")
         return JsonResponse({"status": "error", "message": "An unexpected error occurred"}, status=500)
+    
+    
+@csrf_exempt
+@require_POST
+def login(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        print(data)
+
+        username = data.get('username')
+        password = data.get('password')
+
+        # Basic validation
+        if not username or not password:
+            return JsonResponse({"status": "error", "message": "Username and password are required"}, status=400)
+        # Check if user exists
+        if not CustomerTable.objects.filter(username=username, password=password).exists():
+            return JsonResponse({"status": "error", "message": "Invalid username or password"}, status=400)
+
+        return JsonResponse({"status": "ok", "message": "Login successful"})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    except Exception as e:
+        print(f"Error: {e}")
+        return JsonResponse({"status": "error", "message": "An unexpected error occurred"}, status=500)
+    
+    
+@csrf_exempt
+@require_POST
+def update_partial_profile(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        print(data)
+
+        username = data.get('username')
+        password = data.get('password')
+        phone_number = data.get('phone_number')
+        address = data.get('address')
+        preferences = data.get('preference') 
+
+        # Basic validation
+        if not username or not password:
+            return JsonResponse({"status": "error", "message": "Username and password are required"}, status=400)
+        #check if user exists
+        if not CustomerTable.objects.filter(username=username).exists():
+            return JsonResponse({"status": "error", "message": "User does not exist"}, status=400)
+        # Check if user is genuine
+        if not CustomerTable.objects.filter(username=username, password=password).exists():
+            return JsonResponse({"status": "error", "message": "Invalid username or password"}, status=400)
+        # Update user
+        if phone_number:
+            CustomerTable.objects.filter(username=username).update(phone_number=phone_number)
+        if address:
+            CustomerTable.objects.filter(username=username).update(address=address)
+        if preferences:
+            CustomerTable.objects.filter(username=username).update(preferences=preferences)
+        if password:
+            CustomerTable.objects.filter(username=username).update(password=password)
+        return JsonResponse({"status": "ok", "message": "Profile updated successfully"})
+    except json.JSONDecodeError:
+        return JsonResponse({"status": "error", "message": "Invalid JSON"}, status=400)
+    except Exception as e:
+        print(f"Error: {e}")
+        return JsonResponse({"status": "error", "message": "An unexpected error occurred"}, status=500)
+        
